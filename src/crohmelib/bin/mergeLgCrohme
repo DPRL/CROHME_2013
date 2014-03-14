@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# NOTE:
+#
+# Make sure that CROHMELibDir and LgEvalDir are defined in your shell
+# enviroment, e.g. by including:
+#	
+#	export CROHMELibDir=<path_to_CROHMELib> 
+#	export LgEvalDir=<path_to_LgEval>
+#	export PATH=$PATH:$CROHMELibDir/bin:$LgEvalDir/bin
+# 
+# in your .bashrc file for bash shell.
+
+if [ $# -lt 2 ] 
+then
+	echo "CROHMELib Label Graph & CROHME .inkml Combiner"
+	echo "Copyright (c) R. Zanibbi, H. Mouchère, 2012-2013"
+	echo ""
+	echo "Usage: mergeLgCrohme file.lg file.inkml" 
+	echo ""
+	echo "Merges a label graph (.lg) interpretation file with its"
+	echo "  associated CROHME input file 'file.inkml.' Output is a"
+	echo "  CROHME inkml file named 'file_out.inkml,' and a 'normalized'"
+	echo "  label graph 'file_crohme.lg' written to the"
+	echo "  current directory."
+	echo ""
+	echo "Note: the 'normalized' label graphs result in all spatial"
+	echo "  relationships being inherited by ancestors in the layout tree."
+	exit 0
+fi
+
+BNAME=`basename $2 .inkml`
+EMSG="!! ERROR converting $1" 
+
+function testExit () {
+	if [ $? -ne 0 ]
+	then
+		echo "  $EMSG"
+		rm -f $BNAME_out.inkml
+		exit
+	fi
+}
+
+# Remove any ^M (Carriage return) symbols from dos-format text files.
+#perl -p -e "s///g" $2 > tempCROHME.inkml
+
+# Convert the Label Graph to a MathML file.
+python $LgEvalDir/src/lg2txt.py $1 $LgEvalDir/translate/mathMLMap.csv \
+	> tempMathML.mml
+testExit
+
+# Add MathML (structure) and segmentation information to the 'stroke' data.
+txl -w 8112 -q -I $CROHMELibDir/src -I $CROHMELibDir/src/Grammars $2 \
+	mergeLgCrohme.Txl - tempMathML.mml $2 > ${BNAME}_out.inkml
+
+testExit
+
+# Convert the .inkml file to the 'normalized' .lg format (where all
+# relationships are inherited, so that participants needn't define inherited
+# edges).
+perl $CROHMELibDir/bin/crohme2lg.pl ${BNAME}_out.inkml > ${BNAME}_crohme.lg
+
+# Remove intermediate files.
+rm tempMathML.mml
+
