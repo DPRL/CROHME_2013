@@ -1,4 +1,3 @@
-
 RIT DPRL CROHME 2013
 ---------------
 DPRL CROHME 2013
@@ -31,6 +30,8 @@ Spatial relationships are classified as inline, superscript or subscript by a Su
 How to run the codes?
 ----
 The codes for the spatial relationship classifier are writeen in C++. All the other parts are written in Python. The version of Python we need is Python 2.7.3 or above.
+
+In the src folder, unzip the tree_39.zip before running the code. Because the original file is too big to be uploaded to GitHub. tree_39.txt contains the parameters for the boosted C4.5 decision trees classifier.
 
 The usage is: python DPRL.pyc DPRL_CROHME2013 <input_path> <output_path>
 
